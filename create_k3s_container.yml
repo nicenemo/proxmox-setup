@@ -1,6 +1,6 @@
 #!/usr/bin/env ansible-playbook
 ---
-- name: Create ELK container.
+- name: Create K3S container.
   hosts: localhost
   connection: local
   gather_facts: false
@@ -21,10 +21,13 @@
       validate_certs: false
       cores: 8
       cpus: 1
-      memory: 4096
-      swap: 8192
+      memory: 8192
+      swap: 0
       disk: 8182
-      storage: zones
+      # Local storage is my only ext4 disk.
+      # Mounting ext4 formatted volumes in ZFS did not work for me yet.
+      # As suggested here: https://github.com/MarijnKoesen/kubernetes-in-proxmox-with-kubeadm-lxc-and-wireshark
+      storage: local
       unprivileged: false
       onboot: true
       purge: true
@@ -40,7 +43,30 @@
       description: 'ELK - Created with care by Ansible'
       features: 
         - nesting=1
-      proxmox_default_behavior: no_defaults
+- name:  Add extra configuration for container on container host.
+  hosts: aegean
+  gather_facts: false
+  become: false
+  tasks:
+  - name: Add extra configuration to container configuration file. 
+    blockinfile:
+      path: /etc/pve/lxc/119.conf
+      block: |
+        lxc.apparmor.profile: unconfined
+        lxc.cgroup.devices.allow: a
+        lxc.cap.drop:
+        lxc.mount.auto: "proc:rw sys:rw"
+- name:  Start KS container
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  vars:
+     ssh_key: "{{ lookup('file', './authorized_keys/kruse') }}"
+     password: "{{ lookup('password', '/dev/null') }}"
+  collections: 
+    community.general
+  tasks:
   - name: Start newly created LXC container.
     proxmox:
       vmid: '119'

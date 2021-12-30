@@ -6,6 +6,18 @@
   roles:
     - nicenemo.debianbase
   tasks:
+   - name: Copy rc.local script.
+     # From: https://gist.github.com/triangletodd/02f595cd4c0dc9aac5f7763ca2264185
+     # TODO: try a oneshot systemd service instead.
+     copy:
+       src: ./files/k3s/etc/rc.local
+       dest: /etc/rc.local
+       mode: 0700
+       owner: root
+       group: root
+   - name: Execute rc.local.
+     command:
+       cmd: /etc/rc.local
    - name: Get K3S provisioning script.
      uri:
        url:  https://get.k3s.io
