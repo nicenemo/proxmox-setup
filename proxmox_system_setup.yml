@@ -42,99 +42,99 @@
       state: present
       line: 'vm.swapiness=0'
     notify: sysctl changed
-  - name: Disable SWAP. 
-     # Kubernetes can't work with swap enabled.
-    command: 
+  - name: Disable SWAP.
+    # Kubernetes can't work with swap enabled.
+    command:
       cmd: swapoff -a
     changed_when: false
   - name: Disable SWAP in fstab.
-     # Kubernetes can't work with swap enabled.
+    # Kubernetes can't work with swap enabled.
     replace:
       path: /etc/fstab
       regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
-      replace: '# \1'  
+      replace: '# \1'
   tasks:
-  - name: Upgrade ZFS pools.
-    command: 
-      cmd: "zpool upgrade {{ item.key }}"
-    with_dict: "{{ zfs_pools }}"
-    changed_when: false
-  - name: Set properties on tank zone.
-    community.general.zfs:
-      name: tank
-      state: present
-      extra_zfs_properties:
-        acltype: posixacl
-        aclinherit: passthrough
-        xattr: sa
-        sharesmb: off
-        sharenfs: off
-  - name: Enable or Disable SMB sharing on selected ZFS volumes on tank pool.
-    zfs:
-      name:  "tank/{{ item.key }}"
-      state: present
-      extra_zfs_properties:
-        sharesmb: "{{ item.value.sharesmb }}"
-    with_dict: "{{ zfs_pools.tank.volumes }}"
-  - name: Set owner recursive on tank volumes.
-    file: 
-      dest: "/tank/{{ item.key }}" 
-      owner: "{{ item.value.owner }}"
-      group: "{{ item.value.owner }}"
-      mode: "u=rwX,g=rX,o=rX"
-      recurse: yes
-    with_dict: "{{ zfs_pools.tank.volumes }}"
-  - name: Install Samba.
-    apt:
-      name: samba
-  - name: Enable Samba service.
-    service:
-      name: smbd
-      state: started
-      enabled: true
-  - name: Install nginx.
-    apt:
-      name: nginx
-      state: present
-  - name: Ensure default site is disabled.
-    file:
-      path: /etc/nginx/sites-enabled/default
-      state: absent
-    notify: restart nginx
-  - name: Copy nginx proxy configuration for Proxmox.
-    ansible.builtin.template:
-      src: proxmox/etc/nginx/sites-available/proxmox.j2
-      dest: /etc/nginx/sites-available/proxmox
-      owner: root
-      group: root
-      mode: '0644'
-    notify: restart nginx
-  - name: Ensure Proxmox site is enabled.
-    file:
-      src: /etc/nginx/sites-available/proxmox
-      dest: /etc/nginx/sites-enabled/proxmox
-      state: link
-    notify: restart nginx
-  - name: Enable nginx service.
-    service:
-      name: nginx
-      state: started
-      enabled: true
-  - name: Update Proxmox container images.
-    command:
-      cmd: 'pveam update'
-    changed_when: false
-  - name: Install images in local.
-    command:
-      cmd: "pveam download local {{ item }}"
-    loop: "{{ container_images }}"
-    changed_when: false
+    - name: Upgrade ZFS pools.
+      command:
+        cmd: "zpool upgrade {{ item.key }}"
+      with_dict: "{{ zfs_pools }}"
+      changed_when: false
+    - name: Set properties on tank zone.
+      community.general.zfs:
+        name: tank
+        state: present
+        extra_zfs_properties:
+          acltype: posixacl
+          aclinherit: passthrough
+          xattr: sa
+          sharesmb: 'off'
+          sharenfs: 'off'
+    - name: Enable or Disable SMB sharing on selected ZFS volumes on tank pool.
+      zfs:
+        name: "tank/{{ item.key }}"
+        state: present
+        extra_zfs_properties:
+          sharesmb: "{{ item.value.sharesmb }}"
+      with_dict: "{{ zfs_pools.tank.volumes }}"
+    - name: Set owner recursive on tank volumes.
+      file:
+        dest: "/tank/{{ item.key }}"
+        owner: "{{ item.value.owner }}"
+        group: "{{ item.value.owner }}"
+        mode: "u=rwX,g=rX,o=rX"
+        recurse: true
+      with_dict: "{{ zfs_pools.tank.volumes }}"
+    - name: Install Samba.
+      apt:
+        name: samba
+    - name: Enable Samba service.
+      service:
+        name: smbd
+        state: started
+        enabled: true
+    - name: Install nginx.
+      apt:
+        name: nginx
+        state: present
+    - name: Ensure default site is disabled.
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: restart nginx
+    - name: Copy nginx proxy configuration for Proxmox.
+      ansible.builtin.template:
+        src: proxmox/etc/nginx/sites-available/proxmox.j2
+        dest: /etc/nginx/sites-available/proxmox
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart nginx
+    - name: Ensure Proxmox site is enabled.
+      file:
+        src: /etc/nginx/sites-available/proxmox
+        dest: /etc/nginx/sites-enabled/proxmox
+        state: link
+      notify: restart nginx
+    - name: Enable nginx service.
+      service:
+        name: nginx
+        state: started
+        enabled: true
+    - name: Update Proxmox container images.
+      command:
+        cmd: 'pveam update'
+      changed_when: false
+    - name: Install images in local.
+      command:
+        cmd: "pveam download local {{ item }}"
+      loop: "{{ container_images }}"
+      changed_when: false
   handlers:
-  - name: sysctl changed
-    command: 
-      cmd: sysctl --system
-    register: container_images
-  - name: restart nginx
-    service:
-      name: nginx
-      state: restarted
+    - name: sysctl changed
+      command:
+        cmd: sysctl --system
+      register: container_images
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted

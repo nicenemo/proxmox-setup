@@ -6,29 +6,29 @@
   gather_facts: false
   become: false
   vars:
-     ssh_key: "{{ lookup('file', './authorized_keys/kruse') }}"
-     password: "{{ lookup('password', '/dev/null') }}"
-  collections: 
+    ssh_key: "{{ lookup('file', './authorized_keys/kruse') }}"
+    password: "{{ lookup('password', '/dev/null') }}"
+  collections:
     community.general
   tasks:
-  - name: Stop LXC container.
-    proxmox:
-      vmid: '119'
-      node: aegean
-      api_user: 'root@pam'
-      api_password: "{{ proxmox_api_password }}"
-      api_host: aegean.pondiki.lan 
-      validate_certs: false
-      state: stopped
-  - name: Destroy LXC container.
-    proxmox:
-      vmid: '119'
-      node: aegean
-      api_user: 'root@pam'
-      api_password: '{{ proxmox_api_password }}'
-      api_host: aegean.pondiki.lan 
-      validate_certs: false
-      purge: true
-      force: true
-      state: absent
-      proxmox_default_behavior: no_defaults
+    - name: Stop LXC container.
+      proxmox:
+        vmid: '119'
+        node: aegean
+        api_user: 'root@pam'
+        api_password: "{{ proxmox_api_password }}"
+        api_host: aegean.pondiki.lan
+        validate_certs: false
+        state: stopped
+    - name: Destroy LXC container.
+      proxmox:
+        vmid: '119'
+        node: aegean
+        api_user: 'root@pam'
+        api_password: '{{ proxmox_api_password }}'
+        api_host: aegean.pondiki.lan
+        validate_certs: false
+        purge: true
+        force: true
+        state: absent
+        proxmox_default_behavior: no_defaults

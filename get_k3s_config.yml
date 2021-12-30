@@ -8,9 +8,9 @@
   tasks:
     - name: Create kubectl directory.
       file:
-         name: ~/.kube
-         state: directory
-         mode: 0700
+        name: ~/.kube
+        state: directory
+        mode: 0700
 - name: Get K3S config file.
   hosts: k3s
   become: true
@@ -28,8 +28,8 @@
   gather_facts: false
   connection: local
   tasks:
-   - name: Replace 127.0.0.1 by k3s.
-     lineinfile:
-       path: ~/.kube/config
-       search_string: '127.0.0.1'
-       line: '    server: https://k3s:6443'
+    - name: Replace 127.0.0.1 by k3s.
+      lineinfile:
+        path: ~/.kube/config
+        search_string: '127.0.0.1'
+        line: '    server: https://k3s:6443'
