@@ -1,4 +1,4 @@
-# Proxmox-setup
+# Proxmox-setup with K3S Support
 
 An [Ansible](https://www.ansible.com) playbooks to setup a [Proxmox](https://proxmox.com) virtualisation environment as home server. This setup includes configuration changes so that LXC containers can be used to host [K3S](https://k3s.io/) or [Docker](docker.com).
 
@@ -150,8 +150,32 @@ Since your key is copied into the root user's `/root/.ssh/authorized_keys` file,
 
 ## Create LXC container for K3S
 
-With the ./create_elk_container.yml
+With the  [`create_k3s_container.yml`](create_k3s_container.yml) Playbook a Container capable of K3S
+can be created.
+
+```bash
+./create_k3s_container.yml
+```
 
 ## Destroy K3S container
 
+Destroys the K3S container with the [`destroy_k3s_container.yml`](destroy_k3s_container.yml) playbook.
+
+```bash
+./destroy_k3s_container.yml
+```
+
 ## Provision K3S container
+
+Provisions the K3S Container with K3S.
+
+```bash
+./provision_k3s.yml
+```
+
+## Get kubectl config to your local machine
+
+> Don't use if your manage more Kubernetes clusters.
+This overwrites your `~/.kube/config`
+
+Run [`get_k3s_config.yml`](get_k3s_config.yml)
