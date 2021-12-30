@@ -1,0 +1,13 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Initialize local system.
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Import Requirements
+      command:
+        cmd: 'ansible-galaxy install -r requirements.yml -f'
+    - name: Install Mitogen ssh accelaration
+      pip:
+        name: 'git+https://github.com/dw/mitogen.git'

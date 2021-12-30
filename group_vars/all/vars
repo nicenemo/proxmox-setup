@@ -1,0 +1,2 @@
+---
+proxmox_api_password: "{{ proxmox_api_password_encrypted }}"

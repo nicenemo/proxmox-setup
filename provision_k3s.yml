@@ -1,0 +1,7 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Provision K3S.
+  hosts: k3s_hosts
+  become: true
+  roles:
+    - nicenemo.debianbase

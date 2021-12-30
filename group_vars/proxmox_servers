@@ -1,0 +1,69 @@
+---
+zfs_pools:
+  tank:
+    volumes:
+      addebooks:
+        owner: giesen
+        sharesmb: on
+      angela:
+        owner: giesen
+        sharesmb: on
+      home_giesen:
+        owner: giesen
+        sharesmb: off
+      angeladump:
+        owner: giesen
+        sharesmb: on
+      angela_sl_chatlogs:
+        owner: giesen
+        sharesmb: on
+      angela_sl_photos:
+        owner: giesen
+        sharesmb: on
+      audiobooks:
+        owner: kruse
+        sharesmb: on
+      calibre:
+        owner: kruse
+        sharesmb: on
+      calibre_db:
+        owner: kruse
+        sharesmb: on
+      ebooks:
+        owner: kruse
+        sharesmb: on
+      gmailbackup:
+        owner: kruse
+        sharesmb: on
+      home_samen:
+        owner: kruse
+        sharesmb: on
+      home_kruse:
+        owner: kruse
+        sharesmb: off
+      misc:
+        owner: kruse
+        sharesmb: on
+      music:
+        owner: giesen
+        sharesmb: on
+      photos:
+        owner: kruse
+        sharesmb: on
+      video_courses:
+        owner: kruse
+        sharesmb: on
+      video_documentaries:
+        owner: kruse
+        sharesmb: on
+      video_movies:
+        owner: kruse
+        sharesmb: on
+      video_series:
+        owner: kruse
+        sharesmb: on
+  zones:
+container_images:
+  - 'debian-11-standard_11.0-1_amd64.tar.gz'
+  - 'archlinux-base_20211202-1_amd64.tar.zst' 
+  - 'alpine-3.15-default_20211202_amd64.tar.xz'

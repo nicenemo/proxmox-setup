@@ -1,0 +1,14 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Obtain ZFS pool info from proxmox servers.
+  hosts: proxmox_servers
+  become: true
+  tasks:
+  - name: Gather facts about ZFS pool rpool
+    community.general.zpool_facts: 
+  - name: Gather space usage about all imported ZFS pools
+    community.general.zpool_facts: properties='free,size'
+  - name: Print gathered information
+    ansible.builtin.debug:
+      msg: 'ZFS pool {{ item.name }} has {{ item.free }} free space out of {{ item.size }}.'
+    with_items: '{{ ansible_zfs_pools }}'

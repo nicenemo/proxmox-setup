@@ -1,0 +1,140 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Configure Proxmox base system.
+  hosts: proxmox_servers
+  become: true
+  collections:
+  - community.general
+  - ansible.posix
+  roles:
+  - nicenemo.debianbase
+  pre_tasks:
+  - name: Install ssh key
+    authorized_key:
+      user: root
+      key: '{{root_user_ssh_key }}'
+  - name: Remove paid Proxmox apt repo pve-enterprise config.
+    file:
+      name: /etc/apt/sources.list.d/pve-enterprise.list
+      state: absent
+  - name: Add free Proxmox apt repo pve-no_subscription config.
+    copy:
+      src: proxmox/etc/apt/sources.list.d/pve-no-subscription.list
+      dest: /etc/apt/sources.list.d/pve-no-subscription.list
+  - name: Enlarge ipv4 forwarding
+    # Needed for Kubernetes Metal LB
+    lineinfile:
+      path: /etc/sysctl.conf
+      state: present
+      line: 'net.ipv4.ip_forward=1'
+    notify: sysctl changed
+  - name: Enlarge virtual memory map.
+    # Needed for Elasticsearch
+    lineinfile:
+      path: /etc/sysctl.conf
+      state: present
+      line: 'vm.max_map_count=262144'
+    notify: sysctl changed
+  - name: Set swapiness to 0.
+    # Kubernetes can't work with swap enabled.
+    lineinfile:
+      path: /etc/sysctl.conf
+      state: present
+      line: 'vm.swapiness=0'
+    notify: sysctl changed
+  - name: Disable SWAP. 
+     # Kubernetes can't work with swap enabled.
+    command: 
+      cmd: swapoff -a
+    changed_when: false
+  - name: Disable SWAP in fstab.
+     # Kubernetes can't work with swap enabled.
+    replace:
+      path: /etc/fstab
+      regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+      replace: '# \1'  
+  tasks:
+  - name: Upgrade ZFS pools.
+    command: 
+      cmd: "zpool upgrade {{ item.key }}"
+    with_dict: "{{ zfs_pools }}"
+    changed_when: false
+  - name: Set properties on tank zone.
+    community.general.zfs:
+      name: tank
+      state: present
+      extra_zfs_properties:
+        acltype: posixacl
+        aclinherit: passthrough
+        xattr: sa
+        sharesmb: off
+        sharenfs: off
+  - name: Enable or Disable SMB sharing on selected ZFS volumes on tank pool.
+    zfs:
+      name:  "tank/{{ item.key }}"
+      state: present
+      extra_zfs_properties:
+        sharesmb: "{{ item.value.sharesmb }}"
+    with_dict: "{{ zfs_pools.tank.volumes }}"
+  - name: Set owner recursive on tank volumes.
+    file: 
+      dest: "/tank/{{ item.key }}" 
+      owner: "{{ item.value.owner }}"
+      group: "{{ item.value.owner }}"
+      mode: "u=rwX,g=rX,o=rX"
+      recurse: yes
+    with_dict: "{{ zfs_pools.tank.volumes }}"
+  - name: Install Samba.
+    apt:
+      name: samba
+  - name: Enable Samba service.
+    service:
+      name: smbd
+      state: started
+      enabled: true
+  - name: Install nginx.
+    apt:
+      name: nginx
+      state: present
+  - name: Ensure default site is disabled.
+    file:
+      path: /etc/nginx/sites-enabled/default
+      state: absent
+    notify: restart nginx
+  - name: Copy nginx proxy configuration for Proxmox.
+    ansible.builtin.template:
+      src: proxmox/etc/nginx/sites-available/proxmox.j2
+      dest: /etc/nginx/sites-available/proxmox
+      owner: root
+      group: root
+      mode: '0644'
+    notify: restart nginx
+  - name: Ensure Proxmox site is enabled.
+    file:
+      src: /etc/nginx/sites-available/proxmox
+      dest: /etc/nginx/sites-enabled/proxmox
+      state: link
+    notify: restart nginx
+  - name: Enable nginx service.
+    service:
+      name: nginx
+      state: started
+      enabled: true
+  - name: Update Proxmox container images.
+    command:
+      cmd: 'pveam update'
+    changed_when: false
+  - name: Install images in local.
+    command:
+      cmd: "pveam download local {{ item }}"
+    loop: "{{ container_images }}"
+    changed_when: false
+  handlers:
+  - name: sysctl changed
+    command: 
+      cmd: sysctl --system
+    register: container_images
+  - name: restart nginx
+    service:
+      name: nginx
+      state: restarted

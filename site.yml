@@ -1,0 +1,6 @@
+#!ansible-playbook
+---
+- import_playbook: ./proxmox_system_setup.yml
+  #- import_playbook: ./pihole.yml
+  #- import_playbook: ./uisp.yml
+  #- import_playbook: ./unifi.yml

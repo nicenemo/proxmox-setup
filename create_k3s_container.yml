@@ -1,0 +1,52 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Create ELK container.
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  vars:
+     ssh_key: "{{ lookup('file', './authorized_keys/kruse') }}"
+     password: "{{ lookup('password', '/dev/null') }}"
+  collections: 
+    community.general
+  tasks:
+  - name: Create new LXC container with minimal options.
+    proxmox:
+      vmid: '119'
+      node: aegean
+      api_user: 'root@pam'
+      api_password: "{{ proxmox_api_password }}"
+      api_host: aegean.pondiki.lan 
+      validate_certs: false
+      cores: 8
+      cpus: 1
+      memory: 4096
+      swap: 8192
+      disk: 8182
+      storage: zones
+      unprivileged: false
+      onboot: true
+      purge: true
+      force: true
+      pubkey: "{{ ssh_key }}"
+      password: "{{ password }}"
+      hostname: k3s.pondiki.lan
+      netif: '{"net0":"name=eth0,gw=192.168.178.1,ip=192.168.178.119/24,bridge=vmbr0"}'
+      searchdomain: pondiki.lan
+      nameserver: 192.168.178.1
+      state: present
+      ostemplate: 'local:vztmpl/debian-11-standard_11.0-1_amd64.tar.gz'
+      description: 'ELK - Created with care by Ansible'
+      features: 
+        - nesting=1
+      proxmox_default_behavior: no_defaults
+  - name: Start newly created LXC container.
+    proxmox:
+      vmid: '119'
+      node: aegean
+      api_user: 'root@pam'
+      api_password: "{{ proxmox_api_password }}"
+      api_host: aegean.pondiki.lan 
+      validate_certs: false
+      state: started
