@@ -1,6 +1,6 @@
 # Proxmox-setup with K3S Support
 
-An [Ansible](https://www.ansible.com) playbooks to setup a [Proxmox](https://proxmox.com) virtualisation environment as home server. This setup includes configuration changes so that LXC containers can be used to host [K3S](https://k3s.io/) or [Docker](docker.com).
+A set of [Ansible](https://www.ansible.com) playbooks to configure a [Proxmox](https://proxmox.com) virtualisation environment as home server. This setup includes configuration changes so that LXC containers can be used to host [K3S](https://k3s.io/) or [Docker](docker.com).
 
 >** Beware** Do not run some script from a crazy guy on the internet. Do Read it! 
 In this case it will not work out of the box anyway.
@@ -13,6 +13,17 @@ In this case it will not work out of the box anyway.
 4. Ansible on your local machine
 5. Optionally Mitogen Ansible ssh accelaration.
 6. A few Ansible collections and modules.
+
+## Overview of Playbooks
+
+| Playbook                                              | remark                                         |
+|:------------------------------------------------------|:-----------------------------------------------|
+| [init.yml](init.yml)                                  | Install Roles, collestions and mitogen.        |
+| [proxmox_system_setup.yml](proxmox_system_setup.yml)  | Prepare Proxmox host.                          |
+| [create_k3s_container.yml](create_k3s_container.yml)  | Creates a Proxmox Container for K3S.           |
+| [destroy_k3s_container.yml](destroy_k3s_container.yml)| Destroys the Proxmox container for K3S.        |
+| [provision_k3s.yml](provision_k3s)                    | Provision K3S.                                 |
+| [get_k3s_config.yml](get_k3s_config.yml)              | Store kubectl confguration in `~/.kube/config` |
 
 ## Bootstrapping Ansible
 
@@ -59,6 +70,9 @@ If you do not want to use that you can comment out the configuration lines in [a
 # strategy = mitogen_linear
 ...
 ```
+## Install 3th party modules
+
+Run `./init.yml` to get third party modules from Ansible-Galaxy and a few other dependencies. 
 
 ##  your proxmox hosts in the Ansible Inventory
 
@@ -204,4 +218,4 @@ kube-system   svclb-traefik-zs6nr                      2/2     Running     0    
 kube-system   traefik-786ff64748-zddpc                 1/1     Running     0          9m48s
 ```
 
-No Pds should be in state `pending`
+No Pods should be in state `pending`
