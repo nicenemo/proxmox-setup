@@ -20,6 +20,7 @@ In this case it will not work out of the box anyway.
 |:------------------------------------------------------|:-----------------------------------------------|
 | [init.yml](init.yml)                                  | Install Roles, collestions and mitogen.        |
 | [proxmox_system_setup.yml](proxmox_system_setup.yml)  | Prepare Proxmox host.                          |
+| [proxmox_zpools_info.yml](proxmox_zpools_info)        | Provides information of the use ZFS pools      |
 | [create_k3s_container.yml](create_k3s_container.yml)  | Creates a Proxmox Container for K3S.           |
 | [destroy_k3s_container.yml](destroy_k3s_container.yml)| Destroys the Proxmox container for K3S.        |
 | [provision_k3s.yml](provision_k3s)                    | Provision K3S.                                 |
