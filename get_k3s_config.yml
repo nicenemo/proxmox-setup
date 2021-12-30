@@ -1,0 +1,35 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Create local kubectl config directory.
+  hosts: localhost
+  become: false
+  gather_facts: false
+  connection: local
+  tasks:
+    - name: Create kubectl directory.
+      file:
+         name: ~/.kube
+         state: directory
+         mode: 0700
+- name: Get K3S config file.
+  hosts: k3s
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Copy K3S kubectl config to localhost.
+      fetch:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: ~/.kube/config
+        flat: true
+        mode: 0755
+- name: Correct hostname in kubectl config.
+  hosts: localhost
+  become: false
+  gather_facts: false
+  connection: local
+  tasks:
+   - name: Replace 127.0.0.1 by k3s.
+     lineinfile:
+       path: ~/.kube/config
+       search_string: '127.0.0.1'
+       line: '    server: https://k3s:6443'

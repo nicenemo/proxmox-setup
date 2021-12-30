@@ -5,3 +5,14 @@
   become: true
   roles:
     - nicenemo.debianbase
+  tasks:
+   - name: Get K3S provisioning script.
+     uri:
+       url:  https://get.k3s.io
+       dest: /tmp/k3s.sh
+       mode: 0755
+       owner: root
+       group: root
+   - name: Provision K3S.
+     command:
+       cmd: '/tmp/k3s.sh'       
