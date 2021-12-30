@@ -56,7 +56,7 @@
         lxc.cgroup.devices.allow: a
         lxc.cap.drop:
         lxc.mount.auto: "proc:rw sys:rw"
-- name:  Start KS container
+- name:  Start K3S container.
   hosts: localhost
   connection: local
   gather_facts: false
