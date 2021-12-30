@@ -8,10 +8,11 @@ In this case it will not work out of the box anyway.
 ## Requirements
 
 1. A Proxmox server with ssh access. Initial ssh access with a root password is fine, our playbook will install your key
-3. Python 
-2. Ansible on your local machine
-3. Optionally Mitogen Ansible ssh accelaration.
-4. A few Ansible collections and modules.
+2. Python 
+3. Loal installation of kubectl
+4. Ansible on your local machine
+5. Optionally Mitogen Ansible ssh accelaration.
+6. A few Ansible collections and modules.
 
 ## Bootstrapping Ansible
 
@@ -26,6 +27,8 @@ apt install python3-pip
 
 For Mac use [HomeBrew](https://brew.sh/). For other Linux distributions use the package manager for your distribution.
 Make sure that you install Python 3 and the related pip for Python 3.
+
+I installed [`kubectl`](https://kubernetes.io/docs/tasks/tools/) using my [laptop development Playbook for Debian/WSL2](https://github.com/nicenemo/win-dev-playbook).  
 
 Cross platform:
 
@@ -179,3 +182,26 @@ Provisions the K3S Container with K3S.
 This overwrites your `~/.kube/config`
 
 Run [`get_k3s_config.yml`](get_k3s_config.yml)
+
+## Check that it worked
+
+Run the following command:
+
+```bash
+kubectl get pods --all-namespaces
+```
+
+The output should be something like the following:
+
+```bash
+NAMESPACE     NAME                                     READY   STATUS      RESTARTS   AGE
+kube-system   local-path-provisioner-64ffb68fd-czzdd   1/1     Running     0          10m
+kube-system   metrics-server-9cf544f65-lv9cn           1/1     Running     0          10m
+kube-system   coredns-85cb69466-mrtch                  1/1     Running     0          10m
+kube-system   helm-install-traefik-crd--1-2mtwk        0/1     Completed   0          10m
+kube-system   helm-install-traefik--1-9z49d            0/1     Completed   1          10m
+kube-system   svclb-traefik-zs6nr                      2/2     Running     0          9m47s
+kube-system   traefik-786ff64748-zddpc                 1/1     Running     0          9m48s
+```
+
+No Pds should be in state `pending`
