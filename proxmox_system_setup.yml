@@ -104,34 +104,6 @@
         name: smbd
         state: started
         enabled: true
-    - name: Install nginx.
-      apt:
-        name: nginx
-        state: present
-    - name: Ensure default site is disabled.
-      file:
-        path: /etc/nginx/sites-enabled/default
-        state: absent
-      notify: restart nginx
-    - name: Copy nginx proxy configuration for Proxmox.
-      ansible.builtin.template:
-        src: proxmox/etc/nginx/sites-available/proxmox.j2
-        dest: /etc/nginx/sites-available/proxmox
-        owner: root
-        group: root
-        mode: '0644'
-      notify: restart nginx
-    - name: Ensure Proxmox site is enabled.
-      file:
-        src: /etc/nginx/sites-available/proxmox
-        dest: /etc/nginx/sites-enabled/proxmox
-        state: link
-      notify: restart nginx
-    - name: Enable nginx service.
-      service:
-        name: nginx
-        state: started
-        enabled: true
     - name: Update Proxmox container images.
       command:
         cmd: 'pveam update'
