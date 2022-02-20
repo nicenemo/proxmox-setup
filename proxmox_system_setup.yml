@@ -59,7 +59,7 @@
         cmd: "zpool upgrade {{ item.key }}"
       with_dict: "{{ zfs_pools }}"
       changed_when: false
-    - name: Set properties on tank zone.
+    - name: Set properties on tank pool.
       community.general.zfs:
         name: tank
         state: present
@@ -67,6 +67,18 @@
           acltype: posixacl
           aclinherit: passthrough
           xattr: sa
+          atime: off
+          sharesmb: 'off'
+          sharenfs: 'off'
+    - name: Set properties on zones pool.
+      community.general.zfs:
+        name: zones
+        state: present
+        extra_zfs_properties:
+          acltype: posixacl
+          aclinherit: passthrough
+          xattr: sa
+          atime: off
           sharesmb: 'off'
           sharenfs: 'off'
     - name: Enable or Disable SMB sharing on selected ZFS volumes on tank pool.
