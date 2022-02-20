@@ -54,56 +54,6 @@
       regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
       replace: '# \1'
   tasks:
-    - name: Upgrade ZFS pools.
-      command:
-        cmd: "zpool upgrade {{ item.key }}"
-      with_dict: "{{ zfs_pools }}"
-      changed_when: false
-    - name: Set properties on tank pool.
-      community.general.zfs:
-        name: tank
-        state: present
-        extra_zfs_properties:
-          acltype: posixacl
-          aclinherit: passthrough
-          xattr: sa
-          atime: off
-          sharesmb: 'off'
-          sharenfs: 'off'
-    - name: Set properties on zones pool.
-      community.general.zfs:
-        name: zones
-        state: present
-        extra_zfs_properties:
-          acltype: posixacl
-          aclinherit: passthrough
-          xattr: sa
-          atime: off
-          sharesmb: 'off'
-          sharenfs: 'off'
-    - name: Enable or Disable SMB sharing on selected ZFS volumes on tank pool.
-      zfs:
-        name: "tank/{{ item.key }}"
-        state: present
-        extra_zfs_properties:
-          sharesmb: "{{ item.value.sharesmb }}"
-      with_dict: "{{ zfs_pools.tank.volumes }}"
-    - name: Set owner recursive on tank volumes.
-      file:
-        dest: "/tank/{{ item.key }}"
-        owner: "{{ item.value.owner }}"
-        group: "{{ item.value.owner }}"
-        mode: "u=rwX,g=rX,o=rX"
-        recurse: true
-      with_dict: "{{ zfs_pools.tank.volumes }}"
-    - name: Install Samba.
-      apt:
-        name: samba
-    - name: Enable Samba service.
-      service:
-        name: smbd
-        state: started
-        enabled: true
     - name: Update Proxmox container images.
       command:
         cmd: 'pveam update'
@@ -117,8 +67,3 @@
     - name: sysctl changed
       command:
         cmd: sysctl --system
-      register: container_images
-    - name: restart nginx
-      service:
-        name: nginx
-        state: restarted
